@@ -20,8 +20,7 @@ def get_system_logger(name: str):
     """
     if os.getenv("ENV", "dev").lower() == "dev":
         return _setup_system_logger(name)
-    else:
-        return _blank_logger()
+    return _blank_logger()
 
 
 def _setup_system_logger(name: str):
@@ -34,17 +33,9 @@ def _setup_system_logger(name: str):
     stdout_formatter = logging.Formatter(SYSTEM_FMT_STR)
     stdout_handler.setFormatter(stdout_formatter)
 
-    # error handler
-    stderr_handler = logging.StreamHandler(sys.stderr)
-    stderr_handler.setLevel(logging.WARNING)
-    stderr_formatter = logging.Formatter(SYSTEM_FMT_STR)
-    stderr_handler.setFormatter(stderr_formatter)
-
-    ## Add handlers to logger
+    # Add handlers to logger
     if not system_logger.handlers:
         system_logger.addHandler(stdout_handler)
-        system_logger.addHandler(stderr_handler)
-
     return system_logger
 
 
