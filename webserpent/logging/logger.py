@@ -1,12 +1,49 @@
 """Module to hold logging setup methods"""
 
 import logging
-import sys
-from pathlib import Path
 import os
+from pathlib import Path
+import sys
+from typing import List
 
 TEST_FMT_STR = "%(asctime)s - %(levelname)s - %(message)s"
 SYSTEM_FMT_STR = "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+
+
+def log_message(loggers: List[logging.Logger], log_lvl: int, msg: str):
+    """generate log message when multiple loggers are used
+
+    Args:
+        loggers (List[logging.Logger])
+        log_lvl (int)
+        msg (str)
+
+    Raises:
+        ValueError: raised when a 'log_lvl' value not accepted is passed
+    """
+    for logger in loggers:
+        match log_lvl:
+            case logging.DEBUG:
+                logger.debug(msg)
+            case logging.INFO:
+                logger.info(msg)
+            case logging.WARNING:
+                logger.warning(msg)
+            case logging.ERROR:
+                logger.error(msg)
+            case logging.CRITICAL:
+                logger.critical(msg)
+            case _:
+                raise ValueError(
+                    "'log_message' only accepts %s"
+                    % [
+                        logging.DEBUG,
+                        logging.INFO,
+                        logging.WARNING,
+                        logging.ERROR,
+                        logging.CRITICAL,
+                    ]
+                )
 
 
 def get_system_logger(name: str):
@@ -39,7 +76,7 @@ def _setup_system_logger(name: str):
     return system_logger
 
 
-def setup_test_logger(name: str, path: str, file_name: str):
+def setup_test_logger(log_lvl: int, name: str, path: str, file_name: str):
     """returns a testcase logger
 
     Args:
@@ -51,7 +88,7 @@ def setup_test_logger(name: str, path: str, file_name: str):
         logging.Logger
     """
     file_logger = logging.getLogger(name)
-    file_logger.setLevel(logging.INFO)
+    file_logger.setLevel(log_lvl)
 
     # create folder location
     log_path = Path(path)
@@ -60,7 +97,7 @@ def setup_test_logger(name: str, path: str, file_name: str):
     # file handler
     test_log_path = path + "/" + file_name
     file_handler = logging.FileHandler(filename=test_log_path)
-    file_handler.setLevel(logging.INFO)
+    file_handler.setLevel(log_lvl)
     file_formatter = logging.Formatter(TEST_FMT_STR)
     file_handler.setFormatter(file_formatter)
 
