@@ -1,6 +1,7 @@
 import pytest
 from unittest.mock import MagicMock
-from webserpent.configs import set_configs, WebDriverConfigs, Timeouts, _serialize_toml
+from webserpent.configs import set_configs, WebDriverConfigs, Timeouts, _serialize_toml, WebSerpentConfigs
+import time
 
 @pytest.fixture
 def mock_path_exists(mocker):
@@ -15,12 +16,13 @@ def mock_toml_load(mocker):
 def test_set_configs_no_toml(mock_path_exists):
     """Test default configuration when no webserpent.toml exists"""
     mock_path_exists.return_value = False  # Simulate missing toml file
-    configs = set_configs()
-    assert isinstance(configs, WebDriverConfigs)
-    assert configs.headless is True
-    assert isinstance(configs.timeouts, Timeouts)
-    assert configs.timeouts.page_load == 10
-    assert configs.timeouts.find_element == 5
+    webdriver_configs, webserpent_configs = set_configs()
+    assert isinstance(webdriver_configs, WebDriverConfigs)
+    assert isinstance(webserpent_configs, WebSerpentConfigs)
+    assert webdriver_configs.headless is True
+    assert isinstance(webdriver_configs.timeouts, Timeouts)
+    assert webdriver_configs.timeouts.page_load == 10
+    assert webdriver_configs.timeouts.find_element == 5
 
 def test_set_configs_with_toml(mock_path_exists, mock_toml_load):
     """Test configuration loading from webserpent.toml"""
@@ -36,13 +38,13 @@ def test_set_configs_with_toml(mock_path_exists, mock_toml_load):
             },
         }
     }
-    configs = set_configs()
-    assert isinstance(configs, WebDriverConfigs)
-    assert configs.headless is False
-    assert configs.timeouts.implicit == 15
-    assert configs.timeouts.page_load == 20
-    assert configs.timeouts.find_element == 10
-    assert configs.timeouts.element_interaction == 5
+    webdriver_configs, _ = set_configs()
+    assert isinstance(webdriver_configs, WebDriverConfigs)
+    assert webdriver_configs.headless is False
+    assert webdriver_configs.timeouts.implicit == 15
+    assert webdriver_configs.timeouts.page_load == 20
+    assert webdriver_configs.timeouts.find_element == 10
+    assert webdriver_configs.timeouts.element_interaction == 5
 
 def test_serialize_toml_success(mock_toml_load):
     """Test successful serialization of toml file"""

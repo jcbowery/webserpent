@@ -1,8 +1,9 @@
 """Module for config classes"""
 
 from dataclasses import dataclass, field
+import logging
 from pathlib import Path
-from typing import Union, Dict, Any
+from typing import Any, Dict, Union
 
 import toml
 
@@ -44,7 +45,6 @@ class Timeouts:
 @dataclass
 class WebDriverConfigs:
     """webdriver configs"""
-
     headless: bool = True
     timeouts: Timeouts = field(default_factory=Timeouts)
 
@@ -55,17 +55,24 @@ class WebDriverConfigs:
                 f"expected 'headless' to be a bool, got {type(self.headless)}"
             )
 
+@dataclass
+class WebSerpentConfigs:
+    """Configs for systems"""
+    log_lvl: int = logging.INFO
 
 def set_configs() -> WebDriverConfigs:
-    """create figurations from toml file"""
+    """create configurations from toml file"""
     path = Path("webserpent.toml")
     if path.exists():
         toml_dict = _serialize_toml(path.name)
+        # set webconfigs
         webdriver_configs = _set_webdriverconfigs(toml_dict)
-        return webdriver_configs
+        # set webserpent configs
+        webserpent_configs = _set_webserpentconfigs(toml_dict)
+        return (webdriver_configs, webserpent_configs)
     logger.debug("no webserpent.toml config file found")
     logger.warning("using default configurations")
-    return WebDriverConfigs()
+    return (WebDriverConfigs(), WebSerpentConfigs())
 
 def _serialize_toml(path: str) -> Dict[str, Any]:
     logger.info('serializing \'webserpent.toml\'')
@@ -99,5 +106,11 @@ def _set_webdriverconfigs(toml_dict) -> WebDriverConfigs:
     )
     return webdriver_configs
 
+def _set_webserpentconfigs(toml_dict) -> WebSerpentConfigs:
+    logger.info('setting \'WebserpentConfigs\'')
+    webserpent_configs_dict = toml_dict.get('system', {})
+    if webserpent_configs_dict == {}:
+        return WebSerpentConfigs()
+    return WebSerpentConfigs(**webserpent_configs_dict)
 
-CONFIGS = set_configs()
+WEBDRIVERCONFIGS, WEBSERPENTCONFIGS = set_configs()
