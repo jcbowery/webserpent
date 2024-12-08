@@ -4,11 +4,11 @@ from datetime import datetime
 
 import pytest
 
-from webserpent.configs import WEBDRIVERCONFIGS, WEBSERPENTCONFIGS
 from webserpent.driver_management.driver_factory import DriverFactory
 from webserpent.driver_management.options_builder import OptionsBuilder
 from webserpent.enums import BrowserType
 from webserpent.logging.logger import get_system_logger, setup_test_logger
+from webserpent.configurations.configs import CONFIGS
 
 logger = get_system_logger(__name__)
 
@@ -77,7 +77,7 @@ def test_logger(function_name):
     """generate the test logger"""
     date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     test_logger_object = setup_test_logger(
-        WEBSERPENTCONFIGS.log_lvl,
+        CONFIGS.SYSTEM.log_level,
         function_name,
         "Logs",
         f"{function_name+date_str}.txt",
@@ -93,13 +93,13 @@ def browser_options(request, browser, browser_version, test_logger):
     if browser_version:
         options_builder.set_browser_version(browser_version)
     # set headless
-    if not request.config.getoption("--gui") and WEBDRIVERCONFIGS.headless:
+    if not request.config.getoption("--gui") and CONFIGS.WEBDRIVER.headless:
         options_builder.headless()
     # set implicit wait timeout
-    if WEBDRIVERCONFIGS.timeouts.implicit:
-        options_builder.set_implicit_wait_timout(WEBDRIVERCONFIGS.timeouts.implicit)
+    if CONFIGS.TIMEOUTS.implicit > 0:
+        options_builder.set_implicit_wait_timout(CONFIGS.TIMEOUTS.implicit)
     # set pageload timeout
-    options_builder.set_page_load_timeout(WEBDRIVERCONFIGS.timeouts.page_load)
+    options_builder.set_page_load_timeout(CONFIGS.TIMEOUTS.page_load)
 
     yield options_builder.get()
 
