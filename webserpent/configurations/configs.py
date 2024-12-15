@@ -51,10 +51,11 @@ def _set_configs():
     timeout_configs = _create_config(toml_dict.get("timeouts", {}), TimeOuts)
     timeout_configs.validate()
     # webdriver configs
-    browser_type_string = toml_dict.get("webdriver").get("browser_type")
-    toml_dict.get("webdriver").update(
-        {"browser_type": string_to_enum(browser_type_string, BrowserType)}
-    )
+    browser_type_string = toml_dict.get("webdriver", {}).get("browser_type", None)
+    if browser_type_string:
+        toml_dict.get("webdriver").update(
+            {"browser_type": string_to_enum(browser_type_string, BrowserType)}
+        )
     webdriver_configs = _create_config(toml_dict.get("webdriver", {}), WebDriverConfigs)
     webdriver_configs.validate()
 
