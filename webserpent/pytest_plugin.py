@@ -2,13 +2,11 @@
 
 from datetime import datetime
 
-import pytest
-
-from webserpent.driver_management.driver_factory import DriverFactory
+from webserpent.configurations.configs import CONFIGS
 from webserpent.driver_management.options_builder import OptionsBuilder
 from webserpent.enums import BrowserType
+from webserpent.enums import string_to_enum
 from webserpent.logging.logger import get_system_logger, setup_test_logger
-from webserpent.configurations.configs import CONFIGS
 
 logger = get_system_logger(__name__)
 
@@ -20,7 +18,7 @@ def pytest_addoption(parser):
     parser.addoption(
         "--browser",
         action="store",
-        default="chrome",
+        default=None,
         help="specify the browser to run tests in: chrome, firefox, safari",
     )
     parser.addoption(
@@ -36,76 +34,59 @@ def pytest_addoption(parser):
         help="specify the browser version to use",
     )
 
-@pytest.fixture(scope="session")
-def browser(request):
-    """
-    Fixture to provide browser from command-line option
-    """
-    browser_input = request.config.getoption("--browser")
-    match browser_input.lower():
-        case "chrome":
-            browser_choice = BrowserType.CHROME
-        case "firefox":
-            browser_choice = BrowserType.FIREFOX
-        case "safari":
-            browser_choice = BrowserType.SAFARI
-        case _:
-            logger.critical(
-                "can only enter chrome, firefox, or safari, got: %s", browser_input
-            )
-            raise ValueError(f"Incorrect browser input option: {browser_input}")
-    yield browser_choice
 
-@pytest.fixture(scope="session")
-def browser_version(request):
-    """
-    Fixture to provide browser version from command-line option
-    """
-    return request.config.getoption("--browser_version")
-
-@pytest.fixture(scope="function")
-def function_name(request):
-    """get the function name for test"""
-    # Get the name of the test function
-    test_name = request.node.name
-    # Remove the "test_" prefix
-    clean_name = test_name[5:] if test_name.startswith("test_") else test_name
-    return clean_name
-
-@pytest.fixture(scope="function")
-def test_logger(function_name):
-    """generate the test logger"""
-    date_str = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    test_logger_object = setup_test_logger(
-        CONFIGS.SYSTEM.log_level,
-        function_name,
-        "Logs",
-        f"{function_name+date_str}.txt",
+def _get_logger(request):
+    return setup_test_logger(
+        CONFIGS.system.log_level,
+        request.node.name,
+        CONFIGS.system.log_dir_path,
+        _generate_log_name(request.node.name),
     )
-    yield test_logger_object
 
-@pytest.fixture(scope="function")
-def browser_options(request, browser, browser_version, test_logger):
-    """get browser options"""
-    logger.info("Setting browser options")
-    options_builder = OptionsBuilder(browser, test_logger)
-    # set browser version
+
+def _build_options(request):
+    browser_choice = request.config.getoption("--browser")
+    if browser_choice:
+        CONFIGS.webdriver.browser_type = string_to_enum(browser_choice, BrowserType)
+    options_builder = OptionsBuilder(CONFIGS.webdriver.browser_type)
+
+    # Browser Version
+    browser_version = request.config.getoption("--browser_version")
     if browser_version:
-        options_builder.set_browser_version(browser_version)
-    # set headless
-    if not request.config.getoption("--gui") and CONFIGS.WEBDRIVER.headless:
+        CONFIGS.webdriver.browser_version = browser_version
+    if CONFIGS.webdriver.browser_version:
+        options_builder.set_browser_version(CONFIGS.webdriver.browser_version)
+
+    # Page load timeout
+    options_builder.set_page_load_timeout(CONFIGS.timeouts.page_load)
+
+    # Implicit Wait Time
+    if CONFIGS.timeouts.implicit:
+        options_builder.set_implicit_wait_timeout(CONFIGS.timeouts.implicit)
+
+    # Headless
+    if request.config.getoption("--gui"):
+        CONFIGS.webdriver.headless = True
+    if CONFIGS.webdriver.headless:
         options_builder.headless()
-    # set implicit wait timeout
-    if CONFIGS.TIMEOUTS.implicit > 0:
-        options_builder.set_implicit_wait_timout(CONFIGS.TIMEOUTS.implicit)
-    # set pageload timeout
-    options_builder.set_page_load_timeout(CONFIGS.TIMEOUTS.page_load)
 
-    yield options_builder.get()
+    # Window Size
+    options_builder.set_window_size(
+        CONFIGS.webdriver.window_size.get("width"),
+        CONFIGS.webdriver.window_size.get("height"),
+    )
 
-@pytest.fixture(scope="function")
-def driver(test_logger, browser, browser_options):
-    """get driver"""
-    web_driver = DriverFactory.get_local(test_logger, browser, browser_options)
-    yield web_driver
-    web_driver.quit()
+    # Binary location
+    if CONFIGS.system.binary_dir_path:
+        options_builder.set_binary_location(CONFIGS.system.binary_dir_path)
+
+    # TODO: finish browser options
+
+    return options_builder.get()
+
+
+def _generate_log_name(test_name):
+    # Get the current time and format it as "YYYYMMDDHHMMSS"
+    timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+    # Combine the test name with the timestamp
+    return f"{test_name}_{timestamp}.txt"

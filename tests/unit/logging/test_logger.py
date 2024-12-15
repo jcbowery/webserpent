@@ -20,3 +20,4 @@ def test_get_system_logger_without_env_var(mocker: MockerFixture):
     x = get_system_logger('my_name')
 
     assert x == mock_blank_logger
+

@@ -163,3 +163,4 @@ cython_debug/
 
 Logs/
 .vscode/
+webserpent.toml
