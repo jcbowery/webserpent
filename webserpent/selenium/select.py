@@ -1,9 +1,11 @@
 """Module for select wrapping"""
 
-from selenium.webdriver.support.ui import Select as SeleniumSelect
-from webserpent.logging.logger import get_system_logger
 from typing import List
+
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.ui import Select as SeleniumSelect
+
+from webserpent.logging.logger import get_system_logger
 
 logger = get_system_logger(__name__)
 

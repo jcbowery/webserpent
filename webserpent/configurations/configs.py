@@ -10,6 +10,7 @@ from webserpent.configurations.system import SystemConfigs
 from webserpent.configurations.timeouts import TimeOuts
 from webserpent.configurations.webdriver import WebDriverConfigs
 from webserpent.logging.logger import get_system_logger
+from webserpent.enums import string_to_enum, BrowserType
 
 logger = get_system_logger(__name__)
 
@@ -36,9 +37,10 @@ class TOML:
 class Configs:
     """configurations data class to hold config values"""
 
-    SYSTEM: SystemConfigs
-    TIMEOUTS: TimeOuts
-    WEBDRIVER: WebDriverConfigs
+    system: SystemConfigs
+    timeouts: TimeOuts
+    webdriver: WebDriverConfigs
+
 
 def _set_configs():
     toml_dict = _create_toml_dict()
@@ -49,13 +51,18 @@ def _set_configs():
     timeout_configs = _create_config(toml_dict.get("timeouts", {}), TimeOuts)
     timeout_configs.validate()
     # webdriver configs
+    browser_type_string = toml_dict.get("webdriver").get("browser_type")
+    toml_dict.get("webdriver").update(
+        {"browser_type": string_to_enum(browser_type_string, BrowserType)}
+    )
     webdriver_configs = _create_config(toml_dict.get("webdriver", {}), WebDriverConfigs)
     webdriver_configs.validate()
 
     # output configurations
     return Configs(
-        SYSTEM=system_configs, TIMEOUTS=timeout_configs, WEBDRIVER=webdriver_configs
+        system=system_configs, timeouts=timeout_configs, webdriver=webdriver_configs
     )
+
 
 def _create_toml_dict() -> dict:
     logger.info("Checking for configuration file")
@@ -69,12 +76,14 @@ def _create_toml_dict() -> dict:
         toml_dict = {}
     return toml_dict
 
+
 def _create_config(toml_dict: dict, cls):
     try:
         return cls(**toml_dict)
     except TypeError as e:
         logger.critical(e)
         raise
+
 
 def _serialize_toml(path: str) -> Dict[str, Any]:
     logger.info("serializing 'webserpent.toml'")
@@ -85,5 +94,6 @@ def _serialize_toml(path: str) -> Dict[str, Any]:
         raise
     logger.debug("loaded config values:\n\t%s", toml_dict)
     return toml_dict
+
 
 CONFIGS = _set_configs()

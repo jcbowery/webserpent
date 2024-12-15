@@ -20,6 +20,10 @@ pytest-mock = "^3.14.0"
 [tool.poetry.plugins."pytest11"]
 webserpent = "webserpent.pytest_plugin"
 
+[tool.pylint.main]
+disable = ["R0903", "R0902"]
+
+
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
