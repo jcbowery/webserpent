@@ -55,3 +55,32 @@ def test_headless_adds_headless_argument(browser_options, should_call):
         browser_options._options.add_argument.assert_called_once_with('--headless')
     else:
         browser_options._options.add_argument.assert_not_called()
+
+
+@pytest.mark.parametrize("browser_options, input, argument", [
+    (BrowserChoice.CHROME, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
+    (BrowserChoice.FIREFOX, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
+    (BrowserChoice.SAFARI, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
+    (BrowserChoice.CHROME, 'maximized', '--start-maximized'),
+    (BrowserChoice.FIREFOX, 'maximized', '--start-maximized'),
+    (BrowserChoice.SAFARI, 'maximized', '--start-maximized'),
+], indirect=["browser_options"])
+def test_set_window_size_adds_correct_argument(browser_options, input, argument):
+    browser_options.set_window_size(input)
+
+    browser_options._options.add_argument.assert_called_once_with(argument)
+
+
+@pytest.mark.parametrize("browser_options, input, msg", [
+    (BrowserChoice.CHROME, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
+    (BrowserChoice.FIREFOX, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
+    (BrowserChoice.SAFARI, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
+    (BrowserChoice.CHROME, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
+    (BrowserChoice.FIREFOX, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
+    (BrowserChoice.SAFARI, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
+], indirect=["browser_options"])
+def test_set_window_size_throws_ValueError(browser_options, input, msg):
+    with pytest.raises(TypeError, match=msg):
+        browser_options.set_window_size(input)
+
+

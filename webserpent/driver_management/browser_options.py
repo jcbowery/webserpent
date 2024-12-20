@@ -2,6 +2,8 @@
 
 from enum import Enum
 
+from typing import Dict, Union
+
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.safari.options import Options as SafariOptions
@@ -11,6 +13,7 @@ from selenium.webdriver.safari.options import Options as SafariOptions
 
 class BrowserChoice(Enum):
     """Browser choices enum"""
+
     CHROME = "chrome"
     FIREFOX = "firefox"
     SAFARI = "safari"
@@ -18,16 +21,16 @@ class BrowserChoice(Enum):
 
 class BrowserOptions:
     """Builder class for creating Selenium WebDriver Options"""
+
     def __init__(self, browser_choice: BrowserChoice):
         """Class takes in a BrowserChoice enum and assigns an Options object based
-        on the choice. 
+        on the choice.
 
         Args:
             browser_choice (BrowserChoice)
         """
         self._options = None
         self._set_options(browser_choice)
-
 
     def _set_options(self, browser_choice: BrowserChoice):
         match browser_choice:
@@ -38,13 +41,40 @@ class BrowserOptions:
             case BrowserChoice.SAFARI:
                 self._options = SafariOptions()
 
-
     def make_headless(self):
-        """Runs the browser without a UI, useful for running 
-        tests on servers or CI pipelines without a display. 
+        """Runs the browser without a UI, useful for running
+        tests on servers or CI pipelines without a display.
         Feature is not available for Safari
         """
         if isinstance(self._options, SafariOptions):
             pass
         else:
             self._options.add_argument("--headless")
+
+    def set_window_size(self, size: Union[Dict[str, int], str]):
+        """Sets the browser to open maximized or at a specific resolution.
+
+        Args:
+            size (Union[Dict[str, int], str])
+
+        Raises:
+            TypeError: for having a dictionary with the wrong keys
+            TypeError: not passing in a dictionary or 'maximized'
+        """
+        if isinstance(size, dict):
+            if "width" not in size or "height" not in size or len(size) != 2:
+                raise TypeError(
+                    "Expected a dict with exactly two keys: 'width' and 'height'"
+                )
+            self._options.add_argument(
+                f"--window-size={size['width']},{size['height']}"
+            )
+            return
+
+        if size == "maximized":
+            self._options.add_argument("--start-maximized")
+            return
+
+        raise TypeError(
+            "Expected a dict with keys 'width' and 'height' or the string 'maximized'"
+        )
