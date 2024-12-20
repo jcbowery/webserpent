@@ -93,3 +93,12 @@ class BrowserOptions:
             option (UnhandledAlertChoice)
         """
         self._options.unhandled_prompt_behavior = option.value
+
+    def set_ignore_ssl_errors(self):
+        """turns on the ignore ssl error option
+        """
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_argument("--ignore-certificate-errors")
+        elif isinstance(self._options, FirefoxOptions):
+            self._options.set_preference("network.proxy.allow_hijacking_localhost", True)
+        

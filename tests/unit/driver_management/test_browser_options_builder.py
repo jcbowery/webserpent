@@ -17,6 +17,7 @@ def browser_options(mocker, request):
     elif browser_choice == BrowserChoice.FIREFOX:
         spy_options = FirefoxOptions()
         mocker.spy(spy_options, "add_argument")
+        mocker.spy(spy_options, "set_preference")
     elif browser_choice == BrowserChoice.SAFARI:
         spy_options = SafariOptions()
         mocker.spy(spy_options, "add_argument")
@@ -106,3 +107,20 @@ def test_set_unhandled_alerts_sets_expected_value(browser_options, input, value)
     
     actual = browser_options._options.unhandled_prompt_behavior
     assert actual == value, f'wanted {value} but got: {actual}'
+
+
+@pytest.mark.parametrize("browser_options, value", [
+    (BrowserChoice.CHROME, "--ignore-certificate-errors"),
+    (BrowserChoice.FIREFOX, ("network.proxy.allow_hijacking_localhost", True)),
+    (BrowserChoice.SAFARI, None),
+], indirect=["browser_options"])
+def test_set_ignore_ssl_errors(browser_options, value):
+    browser_options.set_ignore_ssl_errors()
+    
+    if isinstance(browser_options._options, ChromeOptions):
+        browser_options._options.add_argument.assert_called_once_with(value)
+    elif isinstance(browser_options._options, FirefoxOptions):
+        browser_options._options.set_preference.assert_called_once_with(*value)
+        
+    else:
+        browser_options._options.add_argument.assert_not_called()
