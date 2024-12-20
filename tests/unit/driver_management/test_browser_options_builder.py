@@ -14,6 +14,7 @@ def browser_options(mocker, request):
     if browser_choice == BrowserChoice.CHROME:
         spy_options = ChromeOptions()
         mocker.spy(spy_options, "add_argument")
+        mocker.spy(spy_options, "add_experimental_option")
     elif browser_choice == BrowserChoice.FIREFOX:
         spy_options = FirefoxOptions()
         mocker.spy(spy_options, "add_argument")
@@ -119,6 +120,23 @@ def test_set_ignore_ssl_errors(browser_options, value):
     
     if isinstance(browser_options._options, ChromeOptions):
         browser_options._options.add_argument.assert_called_once_with(value)
+    elif isinstance(browser_options._options, FirefoxOptions):
+        browser_options._options.set_preference.assert_called_once_with(*value)
+        
+    else:
+        browser_options._options.add_argument.assert_not_called()
+
+
+@pytest.mark.parametrize("browser_options, value", [
+    (BrowserChoice.CHROME, ("prefs", {"profile.default_content_setting_values.notifications": 2})),
+    (BrowserChoice.FIREFOX, ("dom.webnotifications.enabled", False)),
+    (BrowserChoice.SAFARI, None),
+], indirect=["browser_options"])
+def test_set_disabling_notifications(browser_options, value):
+    browser_options.set_disabling_notifications()
+    
+    if isinstance(browser_options._options, ChromeOptions):
+        browser_options._options.add_experimental_option.assert_called_once_with(*value)
     elif isinstance(browser_options._options, FirefoxOptions):
         browser_options._options.set_preference.assert_called_once_with(*value)
         

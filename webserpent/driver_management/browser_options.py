@@ -101,4 +101,11 @@ class BrowserOptions:
             self._options.add_argument("--ignore-certificate-errors")
         elif isinstance(self._options, FirefoxOptions):
             self._options.set_preference("network.proxy.allow_hijacking_localhost", True)
-        
+
+    def set_disabling_notifications(self):
+        """Prevents pop-ups, such as location or notification requests, from interfering with tests.
+        """
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_experimental_option("prefs", {"profile.default_content_setting_values.notifications": 2})
+        elif isinstance(self._options, FirefoxOptions):
+            self._options.set_preference("dom.webnotifications.enabled", False)
