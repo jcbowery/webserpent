@@ -1,0 +1,66 @@
+name: tests
+
+on:
+  push:
+    branches:
+      - "*"
+  pull_request:
+    branches: ["main"]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
+      - name: Install Dependencies
+        run: |
+          poetry install --with test
+
+      - name: Run Pylint
+        run: |
+          poetry run pylint --fail-under=8 webserpent/
+
+  unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4.2.2
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install Poetry
+        run: |
+          pip install poetry
+
+      - name: Configure Poetry
+        run: |
+          poetry config virtualenvs.create true
+          poetry config virtualenvs.in-project true
+
+      - name: Install Dependencies
+        run: |
+          poetry install --with test
+
+      - name: Run UnitTests
+        run: |
+          poetry run pytest tests/unit/
+
