@@ -18,6 +18,13 @@ class BrowserChoice(Enum):
     FIREFOX = "firefox"
     SAFARI = "safari"
 
+class UnhandledAlertChoice(Enum):
+    """Unhandled prompt option choice enum"""
+    ACCEPT='accept'
+    DISMISS='dismiss'
+    IGNORE='ignore'
+    DISMISS_NOTIFY='dismiss and notify'
+    ACCEPT_NOTIFY='accept and notify'
 
 class BrowserOptions:
     """Builder class for creating Selenium WebDriver Options"""
@@ -78,3 +85,11 @@ class BrowserOptions:
         raise TypeError(
             "Expected a dict with keys 'width' and 'height' or the string 'maximized'"
         )
+
+    def set_unhandled_alerts(self, option: UnhandledAlertChoice):
+        """Defines the behavior when an unexpected alert appears during test execution.
+
+        Args:
+            option (UnhandledAlertChoice)
+        """
+        self._options.unhandled_prompt_behavior = option.value

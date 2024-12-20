@@ -1,5 +1,5 @@
 import pytest
-from webserpent.driver_management.browser_options import BrowserOptions, BrowserChoice  # Import your classes here
+from webserpent.driver_management.browser_options import BrowserOptions, BrowserChoice, UnhandledAlertChoice
 from selenium.webdriver.chrome.options import Options as ChromeOptions
 from selenium.webdriver.firefox.options import Options as FirefoxOptions
 from selenium.webdriver.safari.options import Options as SafariOptions
@@ -84,3 +84,25 @@ def test_set_window_size_throws_ValueError(browser_options, input, msg):
         browser_options.set_window_size(input)
 
 
+@pytest.mark.parametrize("browser_options, input, value", [
+    (BrowserChoice.CHROME, UnhandledAlertChoice.ACCEPT, UnhandledAlertChoice.ACCEPT.value),
+    (BrowserChoice.FIREFOX, UnhandledAlertChoice.ACCEPT, UnhandledAlertChoice.ACCEPT.value),
+    (BrowserChoice.SAFARI, UnhandledAlertChoice.ACCEPT, UnhandledAlertChoice.ACCEPT.value),
+    (BrowserChoice.CHROME, UnhandledAlertChoice.DISMISS, UnhandledAlertChoice.DISMISS.value),
+    (BrowserChoice.FIREFOX, UnhandledAlertChoice.DISMISS, UnhandledAlertChoice.DISMISS.value),
+    (BrowserChoice.SAFARI, UnhandledAlertChoice.DISMISS, UnhandledAlertChoice.DISMISS.value),
+    (BrowserChoice.CHROME, UnhandledAlertChoice.DISMISS_NOTIFY, UnhandledAlertChoice.DISMISS_NOTIFY.value),
+    (BrowserChoice.FIREFOX, UnhandledAlertChoice.DISMISS_NOTIFY, UnhandledAlertChoice.DISMISS_NOTIFY.value),
+    (BrowserChoice.SAFARI, UnhandledAlertChoice.DISMISS_NOTIFY, UnhandledAlertChoice.DISMISS_NOTIFY.value),
+    (BrowserChoice.CHROME, UnhandledAlertChoice.ACCEPT_NOTIFY, UnhandledAlertChoice.ACCEPT_NOTIFY.value),
+    (BrowserChoice.FIREFOX, UnhandledAlertChoice.ACCEPT_NOTIFY, UnhandledAlertChoice.ACCEPT_NOTIFY.value),
+    (BrowserChoice.SAFARI, UnhandledAlertChoice.ACCEPT_NOTIFY, UnhandledAlertChoice.ACCEPT_NOTIFY.value),
+    (BrowserChoice.CHROME, UnhandledAlertChoice.IGNORE, UnhandledAlertChoice.IGNORE.value),
+    (BrowserChoice.FIREFOX, UnhandledAlertChoice.IGNORE, UnhandledAlertChoice.IGNORE.value),
+    (BrowserChoice.SAFARI, UnhandledAlertChoice.IGNORE, UnhandledAlertChoice.IGNORE.value),
+], indirect=["browser_options"])
+def test_set_unhandled_alerts_sets_expected_value(browser_options, input, value):
+    browser_options.set_unhandled_alerts(input)
+    
+    actual = browser_options._options.unhandled_prompt_behavior
+    assert actual == value, f'wanted {value} but got: {actual}'
