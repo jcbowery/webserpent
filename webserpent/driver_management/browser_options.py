@@ -18,13 +18,16 @@ class BrowserChoice(Enum):
     FIREFOX = "firefox"
     SAFARI = "safari"
 
+
 class UnhandledAlertChoice(Enum):
     """Unhandled prompt option choice enum"""
-    ACCEPT='accept'
-    DISMISS='dismiss'
-    IGNORE='ignore'
-    DISMISS_NOTIFY='dismiss and notify'
-    ACCEPT_NOTIFY='accept and notify'
+
+    ACCEPT = "accept"
+    DISMISS = "dismiss"
+    IGNORE = "ignore"
+    DISMISS_NOTIFY = "dismiss and notify"
+    ACCEPT_NOTIFY = "accept and notify"
+
 
 class BrowserOptions:
     """Builder class for creating Selenium WebDriver Options"""
@@ -39,19 +42,13 @@ class BrowserOptions:
         self._options = None
         self._set_options(browser_choice)
 
-    def _set_options(self, browser_choice: BrowserChoice):
-        match browser_choice:
-            case BrowserChoice.CHROME:
-                self._options = ChromeOptions()
-            case BrowserChoice.FIREFOX:
-                self._options = FirefoxOptions()
-            case BrowserChoice.SAFARI:
-                self._options = SafariOptions()
-
     def make_headless(self):
         """Runs the browser without a UI, useful for running
         tests on servers or CI pipelines without a display.
         Feature is not available for Safari
+
+        Browsers:
+            Chrome, Firefox
         """
         if isinstance(self._options, SafariOptions):
             pass
@@ -67,6 +64,9 @@ class BrowserOptions:
         Raises:
             TypeError: for having a dictionary with the wrong keys
             TypeError: not passing in a dictionary or 'maximized'
+
+        Browsers:
+            Chrome, Firefox, Safari
         """
         if isinstance(size, dict):
             if "width" not in size or "height" not in size or len(size) != 2:
@@ -91,66 +91,106 @@ class BrowserOptions:
 
         Args:
             option (UnhandledAlertChoice)
+
+        Browsers:
+            Chrome, Firefox, Safari
         """
         self._options.unhandled_prompt_behavior = option.value
 
     def set_ignore_ssl_errors(self):
         """turns on the ignore ssl error option
+
+        Browsers:
+            Chrome, Firefox
         """
         if isinstance(self._options, ChromeOptions):
             self._options.add_argument("--ignore-certificate-errors")
         elif isinstance(self._options, FirefoxOptions):
-            self._options.set_preference("network.proxy.allow_hijacking_localhost", True)
+            self._options.set_preference(
+                "network.proxy.allow_hijacking_localhost", True
+            )
 
     def set_disabling_notifications(self):
         """Prevents pop-ups, such as location or notification requests, from interfering with tests.
+
+        Browsers:
+            Chrome, Firefox
         """
         if isinstance(self._options, ChromeOptions):
-            self._options.add_experimental_option("prefs", {"profile.default_content_setting_values.notifications": 2})
+            self._options.add_experimental_option(
+                "prefs", {"profile.default_content_setting_values.notifications": 2}
+            )
         elif isinstance(self._options, FirefoxOptions):
             self._options.set_preference("dom.webnotifications.enabled", False)
 
-
     def disable_gpu_acceleration(self):
         """Disables GPU-based rendering for environments where it might cause issues.
+
+        Browsers:
+            Chrome, Firefox, Safari
         """
         if isinstance(self._options, ChromeOptions):
-            self._options.add_argument('--disable-gpu')    
+            self._options.add_argument("--disable-gpu")
 
-    
     def disable_extensions(self):
         """Ensures a clean browser state by disabling any pre-installed extensions.
-        """
-        self._options.add_argument('--disable-extensions')
 
+        Browsers:
+            Chrome, Firefox, Safari
+        """
+        self._options.add_argument("--disable-extensions")
 
     def set_emulate_mobile_device(self, device_name: str):
         """Configures the browser to mimic a mobile device for responsive design testing.
 
         Args:
-            device_name (str): _description_
+            device_name (str)
+
+        Browsers:
+            Chrome
         """
         if isinstance(self._options, ChromeOptions):
-            self._options.add_experimental_option("mobileEmulation", {"deviceName": device_name})
-
+            self._options.add_experimental_option(
+                "mobileEmulation", {"deviceName": device_name}
+            )
 
     def set_logging_preference(self, log_lvl: int):
         """Configures the level of browser logs (e.g., `INFO`, `DEBUG`, `OFF`).
 
         Args:
             log_lvl (int)
+
+        Browsers:
+            Chrome
         """
         if isinstance(self._options, ChromeOptions):
             self._options.add_argument(f"--log-level={log_lvl}")
 
-    
     def disable_infobars(self):
         """Prevents "Chrome is being controlled by automated test software" messages.
+
+        Browsers:
+            Chrome
         """
         if isinstance(self._options, ChromeOptions):
-            self._options.add_argument('--disable-infobars')
+            self._options.add_argument("--disable-infobars")
 
     def enable_experimental_webdriver_features(self):
-        """Opt-in to new WebDriver capabilities or experimental browser features."""
+        """Opt-in to new WebDriver capabilities or experimental browser features.
+
+        Browsers:
+            Chrome
+        """
         if isinstance(self._options, ChromeOptions):
-            self._options.add_experimental_option("excludeSwitches", ["enable-automation"])
+            self._options.add_experimental_option(
+                "excludeSwitches", ["enable-automation"]
+            )
+
+    def _set_options(self, browser_choice: BrowserChoice):
+        match browser_choice:
+            case BrowserChoice.CHROME:
+                self._options = ChromeOptions()
+            case BrowserChoice.FIREFOX:
+                self._options = FirefoxOptions()
+            case BrowserChoice.SAFARI:
+                self._options = SafariOptions()
