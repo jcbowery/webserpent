@@ -116,3 +116,41 @@ class BrowserOptions:
         """
         if isinstance(self._options, ChromeOptions):
             self._options.add_argument('--disable-gpu')    
+
+    
+    def disable_extensions(self):
+        """Ensures a clean browser state by disabling any pre-installed extensions.
+        """
+        self._options.add_argument('--disable-extensions')
+
+
+    def set_emulate_mobile_device(self, device_name: str):
+        """Configures the browser to mimic a mobile device for responsive design testing.
+
+        Args:
+            device_name (str): _description_
+        """
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_experimental_option("mobileEmulation", {"deviceName": device_name})
+
+
+    def set_logging_preference(self, log_lvl: int):
+        """Configures the level of browser logs (e.g., `INFO`, `DEBUG`, `OFF`).
+
+        Args:
+            log_lvl (int)
+        """
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_argument(f"--log-level={log_lvl}")
+
+    
+    def disable_infobars(self):
+        """Prevents "Chrome is being controlled by automated test software" messages.
+        """
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_argument('--disable-infobars')
+
+    def enable_experimental_webdriver_features(self):
+        """Opt-in to new WebDriver capabilities or experimental browser features."""
+        if isinstance(self._options, ChromeOptions):
+            self._options.add_experimental_option("excludeSwitches", ["enable-automation"])

@@ -158,3 +158,63 @@ def test_disable_gpu_acceleration(browser_options, should_call):
     else:
         # Assert the method was not called
         browser_options._options.add_argument.assert_not_called()
+
+@pytest.mark.parametrize("browser_options", [
+    (BrowserChoice.CHROME),
+    (BrowserChoice.FIREFOX),
+    (BrowserChoice.SAFARI),
+], indirect=["browser_options"])
+def test_disable_gextensions(browser_options):
+    browser_options.disable_extensions()
+
+    browser_options._options.add_argument.assert_called_once_with('--disable-extensions')
+
+@pytest.mark.parametrize("browser_options, device_name", [
+    (BrowserChoice.CHROME, 'iPhone X'),
+    (BrowserChoice.FIREFOX, False),
+    (BrowserChoice.SAFARI, False),
+], indirect=["browser_options"])
+def test_set_emulate_mobile_device(browser_options, device_name):
+    browser_options.set_emulate_mobile_device(device_name)
+
+    if device_name:
+        browser_options._options.add_experimental_option.assert_called_once_with("mobileEmulation", {"deviceName": device_name})
+
+
+@pytest.mark.parametrize("browser_options, log_lvl", [
+    (BrowserChoice.CHROME, 3),
+    (BrowserChoice.FIREFOX, False),
+    (BrowserChoice.SAFARI, False),
+], indirect=["browser_options"])
+def test_set_logging_preference(browser_options, log_lvl):
+    browser_options.set_logging_preference(log_lvl)
+
+    if log_lvl:
+        browser_options._options.add_argument.assert_called_once_with(f"--log-level={log_lvl}")
+    else:
+        browser_options._options.add_argument.assert_not_called()
+
+
+@pytest.mark.parametrize("browser_options, should_run", [
+    (BrowserChoice.CHROME, True),
+    (BrowserChoice.FIREFOX, False),
+    (BrowserChoice.SAFARI, False),
+], indirect=["browser_options"])
+def test_dsiable_infobars(browser_options, should_run):
+    browser_options.disable_infobars()
+
+    if should_run:
+        browser_options._options.add_argument.assert_called_once_with("--disable-infobars")
+    else:
+        browser_options._options.add_argument.assert_not_called()
+
+@pytest.mark.parametrize("browser_options, option", [
+    (BrowserChoice.CHROME, True),
+    (BrowserChoice.FIREFOX, False),
+    (BrowserChoice.SAFARI, False),
+], indirect=["browser_options"])
+def test_enable_experimental_webdriver_features(browser_options, option):
+    browser_options.enable_experimental_webdriver_features()
+    if option:
+        browser_options._options.add_experimental_option.assert_called_once_with("excludeSwitches", ["enable-automation"])
+    
