@@ -142,3 +142,19 @@ def test_set_disabling_notifications(browser_options, value):
         
     else:
         browser_options._options.add_argument.assert_not_called()
+
+
+@pytest.mark.parametrize("browser_options, should_call", [
+    (BrowserChoice.CHROME, True),
+    (BrowserChoice.FIREFOX, False),
+    (BrowserChoice.SAFARI, False),
+], indirect=["browser_options"])
+def test_disable_gpu_acceleration(browser_options, should_call):
+    browser_options.disable_gpu_acceleration()
+
+    if should_call:
+        # Assert the method was called with the correct argument
+        browser_options._options.add_argument.assert_called_once_with('--disable-gpu')
+    else:
+        # Assert the method was not called
+        browser_options._options.add_argument.assert_not_called()
