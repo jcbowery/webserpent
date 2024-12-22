@@ -42,6 +42,14 @@ class BrowserOptions:
         self._options = None
         self._set_options(browser_choice)
 
+    def get(self) -> Union[ChromeOptions, FirefoxOptions, SafariOptions]:
+        """return the webdriver options
+
+        Returns:
+            Union[ChromeOptions, FirefoxOptions, SafariOptions]
+        """
+        return self._options
+
     def make_headless(self):
         """Runs the browser without a UI, useful for running
         tests on servers or CI pipelines without a display.
@@ -56,15 +64,14 @@ class BrowserOptions:
             self._options.add_argument("--headless")
 
     def set_window_size(self, size: Union[Dict[str, int], str]):
-        """Sets the browser to open maximized or at a specific resolution.
+        """Sets the browser to open at a specific resolution.
 
         Args:
             size (Union[Dict[str, int], str])
 
         Raises:
             TypeError: for having a dictionary with the wrong keys
-            TypeError: not passing in a dictionary or 'maximized'
-
+        
         Browsers:
             Chrome, Firefox, Safari
         """
@@ -73,17 +80,17 @@ class BrowserOptions:
                 raise TypeError(
                     "Expected a dict with exactly two keys: 'width' and 'height'"
                 )
-            self._options.add_argument(
-                f"--window-size={size['width']},{size['height']}"
-            )
+            if isinstance(self._options, (ChromeOptions, SafariOptions)):
+                self._options.add_argument(
+                    f"--window-size={size['width']},{size['height']}"
+                )
+            else:
+                self._options.add_argument(f'--width={size['width']}')
+                self._options.add_argument(f'--height={size['height']}')
             return
-
-        if size == "maximized":
-            self._options.add_argument("--start-maximized")
-            return
-
+        
         raise TypeError(
-            "Expected a dict with keys 'width' and 'height' or the string 'maximized'"
+            "Expected a dict with keys 'width' and 'height'"
         )
 
     def set_unhandled_alerts(self, option: UnhandledAlertChoice):
@@ -127,7 +134,7 @@ class BrowserOptions:
         """Disables GPU-based rendering for environments where it might cause issues.
 
         Browsers:
-            Chrome, Firefox, Safari
+            Chrome
         """
         if isinstance(self._options, ChromeOptions):
             self._options.add_argument("--disable-gpu")

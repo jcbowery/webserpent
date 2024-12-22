@@ -61,22 +61,26 @@ def test_headless_adds_headless_argument(browser_options, should_call):
 
 @pytest.mark.parametrize("browser_options, input, argument", [
     (BrowserChoice.CHROME, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
-    (BrowserChoice.FIREFOX, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
+    (BrowserChoice.FIREFOX, {"width": 1920, "height": 1080}, ['--width=1920', '--height=1080']),
     (BrowserChoice.SAFARI, {"width": 1920, "height": 1080}, '--window-size=1920,1080'),
-    (BrowserChoice.CHROME, 'maximized', '--start-maximized'),
-    (BrowserChoice.FIREFOX, 'maximized', '--start-maximized'),
-    (BrowserChoice.SAFARI, 'maximized', '--start-maximized'),
 ], indirect=["browser_options"])
-def test_set_window_size_adds_correct_argument(browser_options, input, argument):
+def test_set_window_size_adds_correct_argument(mocker, browser_options, input, argument):
     browser_options.set_window_size(input)
 
-    browser_options._options.add_argument.assert_called_once_with(argument)
+    if isinstance(browser_options._options, FirefoxOptions):
+        browser_options._options.add_argument.assert_has_calls([
+            mocker.call('--width=1920'),
+            mocker.call('--height=1080')
+        ])
+    else:
+        browser_options._options.add_argument.assert_called_once_with(argument)
+
 
 
 @pytest.mark.parametrize("browser_options, input, msg", [
-    (BrowserChoice.CHROME, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
-    (BrowserChoice.FIREFOX, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
-    (BrowserChoice.SAFARI, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height' or the string 'maximized'"),
+    (BrowserChoice.CHROME, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height'"),
+    (BrowserChoice.FIREFOX, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height'"),
+    (BrowserChoice.SAFARI, '{"width": 1920, "height": 1080}', "Expected a dict with keys 'width' and 'height'"),
     (BrowserChoice.CHROME, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
     (BrowserChoice.FIREFOX, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
     (BrowserChoice.SAFARI, {"apple": 1920, "orange": 1080}, "Expected a dict with exactly two keys: 'width' and 'height'"),
@@ -217,4 +221,13 @@ def test_enable_experimental_webdriver_features(browser_options, option):
     browser_options.enable_experimental_webdriver_features()
     if option:
         browser_options._options.add_experimental_option.assert_called_once_with("excludeSwitches", ["enable-automation"])
-    
+
+@pytest.mark.parametrize("browser_options, option_type", [
+    (BrowserChoice.CHROME, ChromeOptions),
+    (BrowserChoice.FIREFOX, FirefoxOptions),
+    (BrowserChoice.SAFARI, SafariOptions),
+], indirect=["browser_options"])
+def test_get(browser_options, option_type):
+    result = browser_options.get()
+
+    assert isinstance(result, option_type)
