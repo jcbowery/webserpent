@@ -1,3 +1,6 @@
+"""element tests"""
+from unittest.mock import Mock
+
 import pytest
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
@@ -6,14 +9,13 @@ from webserpent.selenium.element import (
     ClickFailureException,
     Element,
     ElementClickInterceptedException,
-    FlakyClickException,
-    InvalidElementStateException,
-    UnexpectedClickException,
     ElementNotInteractableException,
+    FlakyClickException,
     FlakySendTetxException,
-    SendTextFailureException
+    InvalidElementStateException,
+    SendTextFailureException,
+    UnexpectedClickException,
 )
-from unittest.mock import Mock
 
 @pytest.fixture
 def element(mocker):
