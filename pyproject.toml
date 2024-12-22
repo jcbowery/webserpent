@@ -9,11 +9,13 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.12"
 selenium = "^4.27.1"
+pdoc = "^15.0.1"
 
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.3.4"
 pylint = "^3.3.2"
+pytest-mock = "^3.14.0"
 
 [build-system]
 requires = ["poetry-core"]
