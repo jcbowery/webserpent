@@ -22,3 +22,12 @@ class FlakyClickException(FlakyException):
 
 class UnexpectedClickException(UnexpectedException):
     """Exception for unexpected issues during click actions."""
+
+class FlakySendTetxException(FlakyException):
+    """Excepeting for flaky behavior during a send text action"""
+
+class SendTextFailureException(FailureException):
+    """Exception for failure during send text"""
+
+class UnexptedSendTextException(UnexpectedException):
+    """Exception for unexpected issues during send keys action"""

@@ -13,6 +13,9 @@ from webserpent.exceptions.exceptions import (
     ClickFailureException,
     FlakyClickException,
     UnexpectedClickException,
+    FlakySendTetxException,
+    SendTextFailureException,
+    UnexptedSendTextException,
 )
 from webserpent.selenium.wait import (
     wait_for_element_to_be_clickable,
@@ -96,8 +99,7 @@ class Element:
                     if force:
                         self.js_click()
                         break
-                    else:
-                        raise FlakyClickException(
+                    raise FlakyClickException(
                             f"Issues with clicking {self._name}"
                         ) from e
             except StaleElementReferenceException:
@@ -106,6 +108,58 @@ class Element:
                 raise ClickFailureException(f"Failure to click on {self._name}") from e
             except Exception as e:
                 raise UnexpectedClickException("Unknown Error") from e
+
+    def send_text(self, text: str, timeout: int = 3, force=True):
+        """send text to an element. If ElementClickInterceptedException or
+        ElementNotInteractableException is raised a scroll to element action is performed
+        and a second send text attempt is made. With force = True, if the second attempt also
+        raises one of thsoe errors a js send text is performed.
+
+        Args:
+            text (str)
+            timeout (int, optional):  Defaults to 3.
+            force (bool, optional):  Defaults to True.
+
+        Raises:
+            SendTextFailureException: 
+            FlakySendTetxException: 
+            SendTextFailureException: 
+            UnexptedSendTextException: 
+        """
+        try:
+            wait_for_element_to_be_clickable(self._element, timeout)
+        except TimeoutException as e:
+            raise SendTextFailureException(
+                "Failure to send text to {self._name} due to timeout"
+            ) from e
+
+        attempts = 1
+        while attempts <= 2:
+            try:
+                self._element.send_keys(text)
+                break
+            except (
+                ElementClickInterceptedException,
+                ElementNotInteractableException,
+            ) as e:
+                if attempts == 1:
+                    self.scroll_to()
+                    attempts += 1
+                else:
+                    if force:
+                        self.js_send_text(text)
+                        break
+                    raise FlakySendTetxException(
+                            f"Issues with sending text to {self._name}"
+                        ) from e
+            except StaleElementReferenceException:
+                raise
+            except InvalidElementStateException as e:
+                raise SendTextFailureException(
+                    f"Failure to send text to {self._name}"
+                ) from e
+            except Exception as e:
+                raise UnexptedSendTextException("Unknown Error") from e
 
     def scroll_to(self, timeout=3):
         """Scroll to element and wait for it to be in viewport"""
@@ -117,3 +171,14 @@ class Element:
     def js_click(self):
         """click with js"""
         self._element.parent.execute_script("arguments[0].click();", self._element)
+
+    def js_send_text(self, text: str):
+        """send text via js"""
+        js_code = """
+        var input = arguments[0];
+        var value = arguments[1];
+        input.value = value;
+        var event = new Event('input', { bubbles: true });
+        input.dispatchEvent(event);
+        """
+        self._element.parent.execute_script(js_code, self._element, text)
