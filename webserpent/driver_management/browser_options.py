@@ -71,7 +71,7 @@ class BrowserOptions:
 
         Raises:
             TypeError: for having a dictionary with the wrong keys
-        
+
         Browsers:
             Chrome, Firefox, Safari
         """
@@ -88,10 +88,8 @@ class BrowserOptions:
                 self._options.add_argument(f'--width={size['width']}')
                 self._options.add_argument(f'--height={size['height']}')
             return
-        
-        raise TypeError(
-            "Expected a dict with keys 'width' and 'height'"
-        )
+
+        raise TypeError("Expected a dict with keys 'width' and 'height'")
 
     def set_unhandled_alerts(self, option: UnhandledAlertChoice):
         """Defines the behavior when an unexpected alert appears during test execution.
