@@ -267,3 +267,131 @@ def test_deselect_all(mocker):
     element.deselect_all()
 
     mock_select_instance.deselect_all.assert_called_once()
+
+
+def test_tag_name(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = 'test tag name'
+    mock_web_element.tag_name = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.tag_name
+
+    assert result == expected
+
+
+def test_text(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = 'test text'
+    mock_web_element.text = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.text
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+
+def test_id(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = 'test id'
+    mock_web_element.id = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.id
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+
+def test_size(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = {'width': 53, 'height': 64}
+    mock_web_element.size = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.size
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+
+def test_location(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = {'x': 53, 'y': 64}
+    mock_web_element.location = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.location
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+def test_rect(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = {'x': 53, 'y': 64, 'width': 53, 'height': 64}
+    mock_web_element.rect = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.rect
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+def test_enabled(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = True
+    mock_web_element.is_enabled.return_value = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.enabled
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+def test_selected(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = True
+    mock_web_element.is_selected.return_value = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.selected
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+def test_displayed(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = True
+    mock_web_element.is_displayed.return_value = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.displayed
+
+    assert result == expected, f'wanted {expected} but got {result}'
+
+def test_get_attribute(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = 'my att'
+    mock_web_element.get_attribute.return_value = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.get_attribute('name')
+
+    assert result == expected, f'wanted {expected} but got {result}'
+    mock_web_element.get_attribute.assert_called_once_with('name')
+
+def test_get_property(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    expected = 'my prop'
+    mock_web_element.get_property.return_value = expected
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+   
+    result = element.get_property('name')
+
+    assert result == expected, f'wanted {expected} but got {result}'
+    mock_web_element.get_property.assert_called_once_with('name')

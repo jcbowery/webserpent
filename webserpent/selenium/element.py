@@ -46,6 +46,87 @@ class Element:
         self._name = name
 
     @property
+    def tag_name(self) -> str:
+        """Get element tag name
+
+        Returns:
+            str
+        """
+        return self._element.tag_name
+
+    @property
+    def text(self) -> str:
+        """Get element text
+
+        Returns:
+            str
+        """
+        return self._element.text
+
+    @property
+    def id(self) -> str:
+        """Get element id
+
+        Returns:
+            str:
+        """
+        return self._element.id
+
+    @property
+    def size(self) -> dict:
+        """Get element size.
+
+        Returns:
+            dict: {'width': <int>, 'height': <int>}
+        """
+        return self._element.size
+
+    @property
+    def location(self) -> dict:
+        """Return element location
+
+        Returns:
+            dict:
+        """
+        return self._element.location
+
+    @property
+    def rect(self) -> dict:
+        """A dictionary with the size and location of the element.
+
+        Returns:
+            dict
+        """
+        return self._element.rect
+
+    @property
+    def enabled(self) -> bool:
+        """Returns if an element is enabled
+
+        Returns:
+            bool:
+        """
+        return self._element.is_enabled()
+
+    @property
+    def selected(self) -> bool:
+        """Return if element is selected
+
+        Returns:
+            bool: 
+        """
+        return self._element.is_selected()
+
+    @property
+    def displayed(self) -> bool:
+        """Return if element is displayed on the DOM
+
+        Returns:
+            bool: 
+        """
+        return self._element.is_displayed()
+
+    @property
     def in_viewport(self) -> bool:
         """Returns if element is in viewport"""
         # Use JavaScript to check if the element is in the viewport
@@ -72,6 +153,28 @@ class Element:
             and element_rect["right"]
         )
         return is_true
+
+    def get_attribute(self, name: str) -> str:
+        """Get a given attribute value
+
+        Args:
+            name (str):
+
+        Returns:
+            str:
+        """
+        return self._element.get_attribute(name)
+
+    def get_property(self, name: str) -> str:
+        """Get given property value
+
+        Args:
+            name (str):
+
+        Returns:
+            str: 
+        """
+        return self._element.get_property(name)
 
     def click(self, timeout: int = 5, force: bool = True):
         """Click the element. If ElementClickInterceptedException or
@@ -185,9 +288,9 @@ class Element:
             value (str)
 
         Raises:
-            FlakySelectException: 
+            FlakySelectException:
             SelectFailureException:
-            UnexpectedSelectException: 
+            UnexpectedSelectException:
         """
         select = Select(self._element)
         try:
@@ -217,9 +320,9 @@ class Element:
             value (str)
 
         Raises:
-            FlakySelectException: 
-            SelectFailureException: 
-            UnexpectedSelectException: 
+            FlakySelectException:
+            SelectFailureException:
+            UnexpectedSelectException:
         """
         select = Select(self._element)
         try:
@@ -245,9 +348,9 @@ class Element:
         """Deselect all items in dropdown
 
         Raises:
-            FlakySelectException: 
-            SelectFailureException: 
-            UnexpectedSelectException: 
+            FlakySelectException:
+            SelectFailureException:
+            UnexpectedSelectException:
         """
         select = Select(self._element)
         try:
