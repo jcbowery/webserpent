@@ -1,6 +1,10 @@
 """Module for holding wait fuctions"""
 
+from typing import Tuple
+
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.remote.webdriver import WebDriver
+from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.wait import WebDriverWait
 
@@ -23,6 +27,14 @@ def wait_for_element_to_be_in_viewport(web_element: WebElement, timeout: int):
     """
     wait = WebDriverWait(web_element, timeout)
     wait.until(_in_viewport(web_element))
+
+def wait_for_element_to_exist(driver: WebDriver, locator :Tuple[By, str], timeout: int):
+    wait = WebDriverWait(driver, timeout)
+    wait.until(EC.presence_of_element_located(locator))
+
+def wait_for_alert(driver: WebDriver, timeout: int):
+    wait = WebDriverWait(driver, timeout)
+    return wait.until(EC.alert_is_present())
 
 def _in_viewport(web_element: WebElement):
     """Returns if element is in viewport"""
