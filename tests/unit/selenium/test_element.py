@@ -4,6 +4,7 @@ from unittest.mock import Mock
 import pytest
 from selenium.webdriver.remote.webelement import WebElement
 from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support.select import Select
 
 from webserpent.selenium.element import (
     ClickFailureException,
@@ -15,6 +16,7 @@ from webserpent.selenium.element import (
     InvalidElementStateException,
     SendTextFailureException,
     UnexpectedClickException,
+    SelectBy
 )
 
 @pytest.fixture
@@ -190,3 +192,78 @@ def test_send_text_force_is_false(mocker):
         element.send_text(text_to_send)
 
     assert element._element.send_keys.call_count == 1
+
+def test_clear(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    element_name = 'test element'
+    element = Element(mock_web_element, element_name)
+
+    element.clear()
+
+    element._element.clear.assert_called_once()
+
+@pytest.mark.parametrize('select_by, value', [
+    (SelectBy.INDEX, "my index"),
+    (SelectBy.VALUE, 'my value'),
+    (SelectBy.VISIBLE_TEXT, 'my visible text')
+])
+def test_select_option_success(mocker, select_by, value):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    element_name = 'test element'
+    mock_select_instance = mocker.Mock(spec=Select)
+    mocker.patch(
+        "webserpent.selenium.element.Select", return_value=mock_select_instance
+    )
+
+    element = Element(mock_web_element, element_name)
+
+    element.select_from_dropdown_by(select_by, value)
+
+    match select_by:
+        case SelectBy.INDEX:
+            mock_select_instance.select_by_index.assert_called_once_with(value)
+        case SelectBy.VALUE:
+            mock_select_instance.select_by_value.assert_called_once_with(value) 
+        case SelectBy.VISIBLE_TEXT:
+            mock_select_instance.select_by_visible_text.assert_called_once_with(value) 
+
+
+@pytest.mark.parametrize('select_by, value', [
+    (SelectBy.INDEX, "my index"),
+    (SelectBy.VALUE, 'my value'),
+    (SelectBy.VISIBLE_TEXT, 'my visible text')
+])
+def test_deselect_option_success(mocker, select_by, value):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    element_name = 'test element'
+    mock_select_instance = mocker.Mock(spec=Select)
+    mocker.patch(
+        "webserpent.selenium.element.Select", return_value=mock_select_instance
+    )
+
+    element = Element(mock_web_element, element_name)
+
+    element.deselect_from_dropdown_by(select_by, value)
+
+    match select_by:
+        case SelectBy.INDEX:
+            mock_select_instance.deselect_by_index.assert_called_once_with(value)
+        case SelectBy.VALUE:
+            mock_select_instance.deselect_by_value.assert_called_once_with(value) 
+        case SelectBy.VISIBLE_TEXT:
+            mock_select_instance.deselect_by_visible_text.assert_called_once_with(value) 
+
+
+def test_deselect_all(mocker):
+    mock_web_element = mocker.Mock(spec=WebElement)
+    element_name = 'test element'
+    mock_select_instance = mocker.Mock(spec=Select)
+    mocker.patch(
+        "webserpent.selenium.element.Select", return_value=mock_select_instance
+    )
+
+    element = Element(mock_web_element, element_name)
+
+    element.deselect_all()
+
+    mock_select_instance.deselect_all.assert_called_once()

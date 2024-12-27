@@ -1,5 +1,7 @@
 """Module for holding selenium element wrappings"""
 
+from enum import Enum
+
 from selenium.common.exceptions import (
     ElementClickInterceptedException,
     ElementNotInteractableException,
@@ -8,6 +10,7 @@ from selenium.common.exceptions import (
     TimeoutException,
 )
 from selenium.webdriver.remote.webelement import WebElement
+from selenium.webdriver.support.select import Select
 
 from webserpent.exceptions.exceptions import (
     ClickFailureException,
@@ -16,6 +19,9 @@ from webserpent.exceptions.exceptions import (
     FlakySendTetxException,
     SendTextFailureException,
     UnexptedSendTextException,
+    SelectFailureException,
+    FlakySelectException,
+    UnexpectedSelectException,
 )
 from webserpent.selenium.wait import (
     wait_for_element_to_be_clickable,
@@ -24,6 +30,12 @@ from webserpent.selenium.wait import (
 
 # TODO: Add test logger
 # TODO: Add configuration values
+
+
+class SelectBy(Enum):
+    INDEX = "index"
+    VALUE = "value"
+    VISIBLE_TEXT = "visible_text"
 
 
 class Element:
@@ -100,8 +112,8 @@ class Element:
                         self.js_click()
                         break
                     raise FlakyClickException(
-                            f"Issues with clicking {self._name}"
-                        ) from e
+                        f"Issues with clicking {self._name}"
+                    ) from e
             except StaleElementReferenceException:
                 raise
             except InvalidElementStateException as e:
@@ -121,10 +133,10 @@ class Element:
             force (bool, optional):  Defaults to True.
 
         Raises:
-            SendTextFailureException: 
-            FlakySendTetxException: 
-            SendTextFailureException: 
-            UnexptedSendTextException: 
+            SendTextFailureException:
+            FlakySendTetxException:
+            SendTextFailureException:
+            UnexptedSendTextException:
         """
         try:
             wait_for_element_to_be_clickable(self._element, timeout)
@@ -150,8 +162,8 @@ class Element:
                         self.js_send_text(text)
                         break
                     raise FlakySendTetxException(
-                            f"Issues with sending text to {self._name}"
-                        ) from e
+                        f"Issues with sending text to {self._name}"
+                    ) from e
             except StaleElementReferenceException:
                 raise
             except InvalidElementStateException as e:
@@ -160,6 +172,96 @@ class Element:
                 ) from e
             except Exception as e:
                 raise UnexptedSendTextException("Unknown Error") from e
+
+    def clear(self):
+        """Clear text from text field"""
+        self._element.clear()
+
+    def select_from_dropdown_by(self, select_by: SelectBy, value: str):
+        """Select from a dropdown by type and value
+
+        Args:
+            select_by (SelectBy)
+            value (str)
+
+        Raises:
+            FlakySelectException: 
+            SelectFailureException:
+            UnexpectedSelectException: 
+        """
+        select = Select(self._element)
+        try:
+            match select_by:
+                case SelectBy.VALUE:
+                    select.select_by_value(value)
+                case SelectBy.INDEX:
+                    select.select_by_index(value)
+                case SelectBy.VISIBLE_TEXT:
+                    select.select_by_visible_text(value)
+        except (
+            ElementNotInteractableException,
+            StaleElementReferenceException,
+            ElementClickInterceptedException,
+        ) as e:
+            raise FlakySelectException("Issue with selecting element") from e
+        except InvalidElementStateException as e:
+            raise SelectFailureException("Failure to select element") from e
+        except Exception as e:
+            raise UnexpectedSelectException("Unexpected error occured") from e
+
+    def deselect_from_dropdown_by(self, select_by: SelectBy, value: str):
+        """Deseelct from a dropdown by type and value
+
+        Args:
+            select_by (SelectBy)
+            value (str)
+
+        Raises:
+            FlakySelectException: 
+            SelectFailureException: 
+            UnexpectedSelectException: 
+        """
+        select = Select(self._element)
+        try:
+            match select_by:
+                case SelectBy.VALUE:
+                    select.deselect_by_value(value)
+                case SelectBy.INDEX:
+                    select.deselect_by_index(value)
+                case SelectBy.VISIBLE_TEXT:
+                    select.deselect_by_visible_text(value)
+        except (
+            ElementNotInteractableException,
+            StaleElementReferenceException,
+            ElementClickInterceptedException,
+        ) as e:
+            raise FlakySelectException("Issue with selecting element") from e
+        except InvalidElementStateException as e:
+            raise SelectFailureException("Failure to select element") from e
+        except Exception as e:
+            raise UnexpectedSelectException("Unexpected error occured") from e
+
+    def deselect_all(self):
+        """Deselect all items in dropdown
+
+        Raises:
+            FlakySelectException: 
+            SelectFailureException: 
+            UnexpectedSelectException: 
+        """
+        select = Select(self._element)
+        try:
+            select.deselect_all()
+        except (
+            ElementNotInteractableException,
+            StaleElementReferenceException,
+            ElementClickInterceptedException,
+        ) as e:
+            raise FlakySelectException("Issue with selecting element") from e
+        except InvalidElementStateException as e:
+            raise SelectFailureException("Failure to select element") from e
+        except Exception as e:
+            raise UnexpectedSelectException("Unexpected error occured") from e
 
     def scroll_to(self, timeout=3):
         """Scroll to element and wait for it to be in viewport"""

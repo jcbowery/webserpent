@@ -31,3 +31,12 @@ class SendTextFailureException(FailureException):
 
 class UnexptedSendTextException(UnexpectedException):
     """Exception for unexpected issues during send keys action"""
+
+class FlakySelectException(FlakyException):
+    """Exception for flaky behavior during a select action"""
+
+class SelectFailureException(FailureException):
+    """Exception for failed select action"""
+
+class UnexpectedSelectException(UnexpectedException):
+    """Exception for unexpected behavior during a select action"""
